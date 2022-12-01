@@ -1,17 +1,16 @@
 {
-  "name": "cashflow",
+  "name": "cashflowjs",
   "version": "1.0.0",
   "description": "Utility functions for time value of money calculations",
   "main": "index.js",
-  "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rjwehrle/cashflow.git"
+    "url": "git+https://github.com/rjwehrle/cashflowjs.git"
   },
-  "author": "Ryan Wehrle",
+  "author": "rjwehrle",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rjwehrle/cashflow/issues"
+    "url": "https://github.com/rjwehrle/cashflowjs/issues"
   },
-  "homepage": "https://github.com/rjwehrle/cashflow#readme"
+  "homepage": "https://github.com/rjwehrle/cashflowjs#readme"
 }
