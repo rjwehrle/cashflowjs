@@ -1,6 +1,6 @@
 # cashflowjs
 ## Description
-cashflowjs is a JavaScript NPM package that exposes helper methods to solve time value of money calculations.
+cashflowjs is a JavaScript NPM package that exposes utility functions to solve time value of money calculations.
 
 ### Features
 
