@@ -12,5 +12,8 @@
   "bugs": {
     "url": "https://github.com/rjwehrle/cashflowjs/issues"
   },
-  "homepage": "https://github.com/rjwehrle/cashflowjs#readme"
+  "homepage": "https://github.com/rjwehrle/cashflowjs#readme",
+  "keywords": [
+    "single", "cash", "flow", "present", "future", "value", "annual", "semiannual", "quarterly", "monthly", "continuous", "compounding"
+  ]
 }
