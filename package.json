@@ -1,11 +1,16 @@
 {
-  "name": "cashflowjs",
-  "version": "1.0.2",
+"name": "cashflowjs",
+"version": "1.0.2",
   "description": "Utility functions for time value of money calculations",
   "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rjwehrle/cashflowjs.git"
+  },
+  "scripts": {
+    "lint": "npx @biomejs/biome lint index.js",
+    "format": "npx @biomejs/biome format index.js --write",
+    "check": "npx @biomejs/biome check --apply index.js"
   },
   "author": "rjwehrle",
   "license": "MIT",
@@ -14,6 +19,20 @@
   },
   "homepage": "https://github.com/rjwehrle/cashflowjs#readme",
   "keywords": [
-    "single", "cash", "flow", "present", "future", "value", "annual", "semiannual", "quarterly", "monthly", "continuous", "compounding"
-  ]
+    "single",
+    "cash",
+    "flow",
+    "present",
+    "future",
+    "value",
+    "annual",
+    "semiannual",
+    "quarterly",
+    "monthly",
+    "continuous",
+    "compounding"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "1.3.3"
+  }
 }

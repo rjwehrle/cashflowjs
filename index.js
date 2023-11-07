@@ -6,16 +6,16 @@
  * @param m - number of compounding periods per year (if null or undefined then
  * cash flow is calculated using continuous compounding)
  */
-exports.fv = function(pv, r, t, m) {
-    // Continuous compounding
-    if (m === null || m === undefined) {
-        return pv * Math.exp(r * t);
-    }
-    // Discrete compounding
-    else {
-        return pv * Math.pow(1 + r / m, m * t);
-    }
-}
+exports.fv = function (pv, r, t, m) {
+	// Continuous compounding
+	if (m === null || m === undefined) {
+		return pv * Math.exp(r * t);
+	}
+	// Discrete compounding
+	else {
+		return pv * (1 + r / m) ** (m * t);
+	}
+};
 
 /**
  * Calculates the present value of a single cash flow
@@ -25,13 +25,13 @@ exports.fv = function(pv, r, t, m) {
  * @param m - number of compounding periods per year (if null or undefined then
  * cash flow is calculated using continuous compounding)
  */
-exports.pv = function(fv, r, t, m) {
-    // Continuous compounding
-    if (m === null || m === undefined) {
-        return fv / Math.exp(r * t);
-    }
-    // Discrete compounding
-    else {
-        return fv / Math.pow(1 + r / m, m * t);
-    }
-}
+exports.pv = function (fv, r, t, m) {
+	// Continuous compounding
+	if (m === null || m === undefined) {
+		return fv / Math.exp(r * t);
+	}
+	// Discrete compounding
+	else {
+		return fv / (1 + r / m) ** (m * t);
+	}
+};
