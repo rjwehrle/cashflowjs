@@ -8,7 +8,7 @@
  */
 exports.fv = function (pv, r, t, m) {
 	// Continuous compounding
-	if (m === null || m === undefined) {
+	if (m === undefined) {
 		return pv * Math.exp(r * t);
 	}
 	// Discrete compounding
@@ -27,7 +27,7 @@ exports.fv = function (pv, r, t, m) {
  */
 exports.pv = function (fv, r, t, m) {
 	// Continuous compounding
-	if (m === null || m === undefined) {
+	if (m === undefined) {
 		return fv / Math.exp(r * t);
 	}
 	// Discrete compounding
