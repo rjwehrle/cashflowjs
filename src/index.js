@@ -9,7 +9,7 @@
 exports.fv = function (pv, r, t, m) {
 	// Continuous compounding
 	if (m === undefined) {
-		return pv * (Math.E ** (r * t));
+		return pv * Math.E ** (r * t);
 	}
 	// Discrete compounding
 	else {
@@ -28,7 +28,7 @@ exports.fv = function (pv, r, t, m) {
 exports.pv = function (fv, r, t, m) {
 	// Continuous compounding
 	if (m === undefined) {
-		return fv / (Math.E ** (r * t));
+		return fv / Math.E ** (r * t);
 	}
 	// Discrete compounding
 	else {
