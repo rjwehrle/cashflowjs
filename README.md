@@ -1,13 +1,28 @@
-# cashflowjs
+# CashflowJS
+[![npm version](https://img.shields.io/npm/v/cashflowjs.svg)](https://www.npmjs.com/package/cashflowjs)
+[![npm downloads](https://img.shields.io/npm/dm/cashflowjs.svg)](https://www.npmjs.com/package/cashflowjs)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ## Description
-cashflowjs is a JavaScript NPM package that exposes utility functions to solve time value of money calculations.
+CashflowJS is comprehensive JavaScript library for time value of money calculations and financial analysis.
 
 ### Features
 
-* Calculate present value (PV) of a single cash flow
-* Calculate present value (PV) of a single cash flow with continuous compounding
-* Calculate future value (FV) of a single cash flow
-* Calculate future value (FV) of a single cash flow with continuous compounding
+#### Basic Cash Flow Functions
+* Present value (PV) of a single cash flow
+* Future value (FV) of a single cash flow
+* Support for both discrete and continuous compounding
+
+#### Annuity Functions
+* Present value of ordinary annuity (PVOA)
+* Present value of annuity due (PVAD)
+* Future value of ordinary annuity (FVOA)
+* Future value of annuity due (FVAD)
+* Payment calculation (PMT)
+* Number of periods calculation (NPER)
+
+#### TypeScript Support
+CashflowJS includes TypeScript definitions for all functions and return types.
 
 ## Installation
 
@@ -22,11 +37,19 @@ npm install cashflowjs
 ```javascript
 var cashflowjs = require('cashflowjs');
 
-# returns 90
-cashflowjs.pv(99, .1, 1, 1);
+// Basic cash flow functions
+const pv = cashflowjs.pv(1000, 0.05, 5, 1);            // PV of $1000 in 5 years at 5% annual interest
+const fv = cashflowjs.fv(1000, 0.05, 5, 1);            // FV of $1000 in 5 years at 5% annual interest
+const pv_cont = cashflowjs.pv(1000, 0.05, 5);          // PV of $1000 in 5 years with continuous compounding
+const fv_cont = cashflowjs.fv(1000, 0.05, 5);          // FV of $1000 in 5 years with continuous compounding
 
-# returns 99
-cashflowjs.fv(90, .1, 1, 1);
+// Annuity calculations
+const pvoa = cashflowjs.pvoa(100, 0.05, 10, 12);       // PV of $100 monthly payment for 10 years at 5%
+const pvad = cashflowjs.pvad(100, 0.05, 10, 12);       // PV of annuity due
+const fvoa = cashflowjs.fvoa(100, 0.05, 10, 12);       // FV of ordinary annuity
+const fvad = cashflowjs.fvad(100, 0.05, 10, 12);       // FV of annuity due
+const pmt = cashflowjs.pmt(10000, 0.05, 60, 12);       // Monthly payment on $10,000 loan
+const nper = cashflowjs.nper(10000, 200, 0.05, 12);    // How long to pay off $10,000 at $200/month
 ```
 
 ## Support
