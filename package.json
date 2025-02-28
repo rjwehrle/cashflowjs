@@ -16,7 +16,7 @@
   },
   "scripts": {
     "test": "npx mocha",
-    "lint": "npx @biomejs/biome lint src test --apply",
+    "lint": "npx @biomejs/biome lint src test --write",
     "format": "npx @biomejs/biome format src test --write"
   },
   "author": "rjwehrle",
