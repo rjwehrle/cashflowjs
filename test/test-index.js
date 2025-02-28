@@ -34,7 +34,7 @@ describe("cashflowjs", () => {
         const pvad = cashflowjs.pvad(1000, 0.05, 5);
         assert.closeTo(pvad, 4545.95, delta);
     });
-    
+
     it("should calculate future value of ordinary annuity", () => {
         const fvoa = cashflowjs.fvoa(1000, 0.05, 5);
         assert.closeTo(fvoa, 5525.63, delta);
@@ -44,11 +44,11 @@ describe("cashflowjs", () => {
         const fvad = cashflowjs.fvad(1000, 0.05, 5);
         assert.closeTo(fvad, 5801.91, delta);
     });
-    
+
     it("should calculate payment amount given present value", () => {
         const pmt = cashflowjs.pmt(10000, 0.05, 5);
         assert.closeTo(pmt, 2309.75, delta);
-      });
+    });
 
     it("should calculate number of periods", () => {
         const nper = cashflowjs.nper(10000, 2309.75, 0.05);
