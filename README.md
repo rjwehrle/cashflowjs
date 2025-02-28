@@ -33,8 +33,9 @@ cashflowjs.fv(90, .1, 1, 1);
 For issue submission please visit [GitHub](https://github.com/rjwehrle/cashflowjs/issues)
 
 ## Roadmap
-* Add calculations for ordinary annuity
-* Add calculations for annuity due
+* Add calculations for internal rate of return (IRR)
+* Add calculations for net present value (NPV)
+* Add calculations for amortization schedule
 
 ## Contributing
 
