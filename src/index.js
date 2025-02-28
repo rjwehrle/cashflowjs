@@ -7,12 +7,12 @@
  * cash flow is calculated using continuous compounding)
  */
 exports.fv = (pv, r, t, m) => {
-	// Continuous compounding
-	if (m == null) {
-		return pv * Math.E ** (r * t);
-	}
-	// Discrete compounding
-	return pv * (1 + r / m) ** (m * t);
+    // Continuous compounding
+    if (m == null) {
+        return pv * Math.E ** (r * t);
+    }
+    // Discrete compounding
+    return pv * (1 + r / m) ** (m * t);
 };
 
 /**
@@ -24,12 +24,12 @@ exports.fv = (pv, r, t, m) => {
  * cash flow is calculated using continuous compounding)
  */
 exports.pv = (fv, r, t, m) => {
-	// Continuous compounding
-	if (m == null) {
-		return fv / Math.E ** (r * t);
-	}
-	// Discrete compounding
-	return fv / (1 + r / m) ** (m * t);
+    // Continuous compounding
+    if (m == null) {
+        return fv / Math.E ** (r * t);
+    }
+    // Discrete compounding
+    return fv / (1 + r / m) ** (m * t);
 };
 
 /**
@@ -40,13 +40,13 @@ exports.pv = (fv, r, t, m) => {
  * @param m - number of compounding periods per year (defaults to 1)
  */
 exports.pvoa = (pmt, r, n, m = 1) => {
-	const i = r / m;
+    const i = r / m;
 
-	if (i === 0) {
-		return pmt * n;
-	}
+    if (i === 0) {
+        return pmt * n;
+    }
 
-	return (pmt * (1 - (1 + i) ** -n)) / i;
+    return (pmt * (1 - (1 + i) ** -n)) / i;
 };
 
 /**
@@ -57,9 +57,9 @@ exports.pvoa = (pmt, r, n, m = 1) => {
  * @param m - number of compounding periods per year (defaults to 1)
  */
 exports.pvad = (pmt, r, n, m = 1) => {
-	const i = r / m;
+    const i = r / m;
 
-	return exports.pvoa(pmt, r, n, m) * (1 + i);
+    return exports.pvoa(pmt, r, n, m) * (1 + i);
 };
 
 /**
@@ -70,13 +70,13 @@ exports.pvad = (pmt, r, n, m = 1) => {
  * @param m - number of compounding periods per year (defaults to 1)
  */
 exports.fvoa = (pmt, r, n, m = 1) => {
-	const i = r / m;
+    const i = r / m;
 
-	if (i === 0) {
-		return pmt * n;
-	}
+    if (i === 0) {
+        return pmt * n;
+    }
 
-	return (pmt * ((1 + i) ** n - 1)) / i;
+    return (pmt * ((1 + i) ** n - 1)) / i;
 };
 
 /**
@@ -87,9 +87,9 @@ exports.fvoa = (pmt, r, n, m = 1) => {
  * @param m - number of compounding periods per year (defaults to 1)
  */
 exports.fvad = (pmt, r, n, m = 1) => {
-	const i = r / m;
+    const i = r / m;
 
-	return exports.fvoa(pmt, r, n, m) * (1 + i);
+    return exports.fvoa(pmt, r, n, m) * (1 + i);
 };
 
 /**
@@ -100,13 +100,13 @@ exports.fvad = (pmt, r, n, m = 1) => {
  * @param m - number of compounding periods per year (defaults to 1)
  */
 exports.pmt = (pv, r, n, m = 1) => {
-	const i = r / m;
+    const i = r / m;
 
-	if (i === 0) {
-		return pv / n;
-	}
+    if (i === 0) {
+        return pv / n;
+    }
 
-	return (pv * i) / (1 - (1 + i) ** -n);
+    return (pv * i) / (1 - (1 + i) ** -n);
 };
 
 /**
@@ -117,11 +117,11 @@ exports.pmt = (pv, r, n, m = 1) => {
  * @param m - number of compounding periods per year (defaults to 1)
  */
 exports.nper = (pv, pmt, r, m = 1) => {
-	const i = r / m;
+    const i = r / m;
 
-	if (i === 0) {
-		return pv / pmt;
-	}
+    if (i === 0) {
+        return pv / pmt;
+    }
 
-	return -Math.log(1 - (pv * i) / pmt) / Math.log(1 + i);
+    return -Math.log(1 - (pv * i) / pmt) / Math.log(1 + i);
 };
