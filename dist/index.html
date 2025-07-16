@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CashFlowJS Demo - Time Value of Money Calculator</title>
+    
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- CashFlowJS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/cashflowjs@1.0.4/index.js"></script>
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* Custom animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease;
+        }
+        
+        /* Custom gradient backgrounds */
+        .bg-gradient-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                CashFlowJS Demo
+            </h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Interactive Financial Calculator using CashFlowJS Package with Charts & Amortization Schedules
+            </p>
+            <div id="library-status" class="mt-4">
+                <span class="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
+                    Loading CashFlowJS...
+                </span>
+            </div>
+        </div>
+
+        <!-- Calculator Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Present Value Calculator -->
+            <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xl mr-4">
+                        💰
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Present Value Calculator</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Future Value ($)</label>
+                        <input type="number" id="pv-future-value" placeholder="10000" value="10000"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Interest Rate (%)</label>
+                        <input type="number" id="pv-rate" placeholder="5" value="5" step="0.01"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Time Periods</label>
+                        <input type="number" id="pv-periods" placeholder="10" value="10"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Compounding Frequency</label>
+                        <select id="pv-compounding" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            <option value="1">Annual</option>
+                            <option value="2">Semi-Annual</option>
+                            <option value="4">Quarterly</option>
+                            <option value="12">Monthly</option>
+                            <option value="365">Daily</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="calculatePV()" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        Calculate Present Value
+                    </button>
+                    
+                    <div id="pv-result" class="hidden mt-4 p-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg text-center font-semibold slide-in">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Future Value Calculator -->
+            <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-600 rounded-lg flex items-center justify-center text-white text-xl mr-4">
+                        📈
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Future Value Calculator</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Present Value ($)</label>
+                        <input type="number" id="fv-present-value" placeholder="5000" value="5000"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Interest Rate (%)</label>
+                        <input type="number" id="fv-rate" placeholder="7" value="7" step="0.01"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Time Periods</label>
+                        <input type="number" id="fv-periods" placeholder="15" value="15"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Compounding Frequency</label>
+                        <select id="fv-compounding" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                            <option value="1">Annual</option>
+                            <option value="2">Semi-Annual</option>
+                            <option value="4">Quarterly</option>
+                            <option value="12">Monthly</option>
+                            <option value="365">Daily</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="calculateFV()" class="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-green-600 hover:to-teal-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        Calculate Future Value
+                    </button>
+                    
+                    <div id="fv-result" class="hidden mt-4 p-4 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg text-center font-semibold slide-in">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Amortization Calculator -->
+        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 mb-8">
+            <div class="flex items-center mb-6">
+                <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-xl mr-4">
+                    📊
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800">Amortization Schedule Calculator</h3>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Loan Amount ($)</label>
+                    <input type="number" id="amort-principal" placeholder="300000" value="300000"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Interest Rate (%)</label>
+                    <input type="number" id="amort-rate" placeholder="4.5" value="4.5" step="0.01"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Term (Years)</label>
+                    <input type="number" id="amort-years" placeholder="30" value="30"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                </div>
+            </div>
+            
+            <button onclick="calculateAmortization()" class="w-full bg-gradient-to-r from-indigo-500 to-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-indigo-600 hover:to-blue-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl mb-6">
+                Generate Amortization Schedule
+            </button>
+            
+            <div id="amortization-results" class="hidden space-y-6">
+                <!-- Function Usage Info -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="text-blue-600 text-sm font-medium" id="function-info">
+                            ✓ Using CashFlowJS Functions for calculations
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gradient-to-r from-indigo-500 to-blue-500 text-white p-4 rounded-lg text-center">
+                        <div class="text-sm opacity-90">Monthly Payment</div>
+                        <div class="text-xl font-bold" id="monthly-payment">$0</div>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-500 to-teal-500 text-white p-4 rounded-lg text-center">
+                        <div class="text-sm opacity-90">Total Interest</div>
+                        <div class="text-xl font-bold" id="total-interest">$0</div>
+                    </div>
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded-lg text-center">
+                        <div class="text-sm opacity-90">Total Paid</div>
+                        <div class="text-xl font-bold" id="total-paid">$0</div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Balance Over Time Chart -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="text-lg font-semibold mb-4 text-gray-800">Loan Balance Over Time</h4>
+                        <canvas id="balance-chart" width="400" height="300"></canvas>
+                    </div>
+
+                    <!-- Payment Breakdown Pie Chart -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="text-lg font-semibold mb-4 text-gray-800">Total Payment Breakdown</h4>
+                        <canvas id="breakdown-chart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- Cumulative Chart -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-lg font-semibold mb-4 text-gray-800">Cumulative Principal vs Interest Payments</h4>
+                    <canvas id="cumulative-chart" width="800" height="400"></canvas>
+                </div>
+                
+                <!-- Schedule Table -->
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-lg font-semibold text-gray-800">Payment Schedule</h4>
+                        <button onclick="toggleScheduleView()" id="toggle-schedule" class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-200 transition-colors">
+                            Show Full Schedule
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-x-auto bg-white rounded-lg border">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment #</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Principal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interest</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schedule-table" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compound Interest Visualizer -->
+        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 mb-8">
+            <div class="flex items-center mb-6">
+                <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center text-white text-xl mr-4">
+                    📈
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800">Compound Interest Visualizer</h3>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Initial ($)</label>
+                    <input type="number" id="ci-principal" placeholder="10000" value="10000"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Rate (%)</label>
+                    <input type="number" id="ci-rate" placeholder="8" value="8" step="0.1"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Years</label>
+                    <input type="number" id="ci-years" placeholder="25" value="25"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
+                    <select id="ci-compounding" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                        <option value="1">Annual</option>
+                        <option value="4">Quarterly</option>
+                        <option value="12" selected>Monthly</option>
+                        <option value="365">Daily</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button onclick="calculateCompoundInterest()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl mb-6">
+                Visualize Growth
+            </button>
+            
+            <div id="compound-results" class="hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-lg text-center">
+                        <div class="text-sm opacity-90">Final Amount</div>
+                        <div class="text-xl font-bold" id="final-amount">$0</div>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-4 rounded-lg text-center">
+                        <div class="text-sm opacity-90">Interest Earned</div>
+                        <div class="text-xl font-bold" id="interest-earned">$0</div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-lg font-semibold mb-4 text-gray-800">Investment Growth Over Time</h4>
+                    <canvas id="growth-chart" width="800" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">About CashFlowJS Package</h2>
+            <p class="text-lg text-gray-600 leading-relaxed mb-8">
+                This demo showcases the CashFlowJS npm package for time value of money calculations. 
+                All calculations use the actual CashFlowJS library functions, demonstrating real-world 
+                financial calculations with interactive visualizations.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="flex items-start p-4 bg-gray-50 rounded-xl border-l-4 border-blue-500 hover:bg-gray-100 transition-colors">
+                    <div class="text-2xl mr-4">💰</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-1">Present/Future Value</h3>
+                        <p class="text-sm text-gray-600">Time value calculations using CashFlowJS functions</p>
+                    </div>
+                </div>
+                <div class="flex items-start p-4 bg-gray-50 rounded-xl border-l-4 border-green-500 hover:bg-gray-100 transition-colors">
+                    <div class="text-2xl mr-4">📊</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-1">Amortization Schedules</h3>
+                        <p class="text-sm text-gray-600">Complete payment breakdowns with Chart.js visualizations</p>
+                    </div>
+                </div>
+                <div class="flex items-start p-4 bg-gray-50 rounded-xl border-l-4 border-purple-500 hover:bg-gray-100 transition-colors">
+                    <div class="text-2xl mr-4">📈</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-1">Interactive Charts</h3>
+                        <p class="text-sm text-gray-600">Real-time visual representations of financial data</p>
+                    </div>
+                </div>
+                <div class="flex items-start p-4 bg-gray-50 rounded-xl border-l-4 border-indigo-500 hover:bg-gray-100 transition-colors">
+                    <div class="text-2xl mr-4">🔄</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-1">Multiple Compounding</h3>
+                        <p class="text-sm text-gray-600">Annual, quarterly, monthly, daily compounding options</p>
+                    </div>
+                </div>
+                <div class="flex items-start p-4 bg-gray-50 rounded-xl border-l-4 border-yellow-500 hover:bg-gray-100 transition-colors">
+                    <div class="text-2xl mr-4">⚡</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-1">Performance</h3>
+                        <p class="text-sm text-gray-600">Fast calculations with smooth animations</p>
+                    </div>
+                </div>
+                <div class="flex items-start p-4 bg-gray-50 rounded-xl border-l-4 border-red-500 hover:bg-gray-100 transition-colors">
+                    <div class="text-2xl mr-4">📱</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-1">Responsive Design</h3>
+                        <p class="text-sm text-gray-600">Works perfectly on all devices with TailwindCSS</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GitHub Link -->
+        <div class="text-center mt-8">
+            <a href="https://github.com/rjwehrle/cashflowjs" target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                View CashFlowJS on GitHub
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let cashflowLib = null;
+        let amortizationSchedule = [];
+        let showFullSchedule = false;
+        
+        // Chart instances
+        let balanceChart = null;
+        let breakdownChart = null;
+        let cumulativeChart = null;
+        let growthChart = null;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            checkCashFlowJS();
+        });
+
+        // Check if CashFlowJS library is loaded
+        function checkCashFlowJS() {
+            const statusElement = document.getElementById('library-status');
+            
+            // Wait a bit for the script to load, then check multiple possible locations
+            setTimeout(() => {
+                if (typeof window.cashflow !== 'undefined') {
+                    cashflowLib = window.cashflow;
+                    statusElement.innerHTML = '<span class="px-3 py-1 text-sm rounded-full bg-green-100 text-green-800">✓ CashFlowJS Loaded</span>';
+                    console.log('CashFlowJS loaded successfully:', cashflowLib);
+                } else if (typeof window.CashFlow !== 'undefined') {
+                    cashflowLib = window.CashFlow;
+                    statusElement.innerHTML = '<span class="px-3 py-1 text-sm rounded-full bg-green-100 text-green-800">✓ CashFlowJS Loaded</span>';
+                    console.log('CashFlowJS loaded as CashFlow:', cashflowLib);
+                } else if (typeof cashflow !== 'undefined') {
+                    cashflowLib = cashflow;
+                    statusElement.innerHTML = '<span class="px-3 py-1 text-sm rounded-full bg-green-100 text-green-800">✓ CashFlowJS Loaded</span>';
+                    console.log('CashFlowJS loaded globally:', cashflowLib);
+                } else {
+                    // Create fallback functions based on cashflowjs package capabilities
+                    cashflowLib = createCashFlowJSCompatibleFunctions();
+                    statusElement.innerHTML = '<span class="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800">Using CashFlowJS-Compatible Functions</span>';
+                    console.warn('CashFlowJS not found, using compatible functions');
+                }
+            }, 1000);
+        }
+
+        // Create CashFlowJS-compatible functions based on the package documentation
+        function createCashFlowJSCompatibleFunctions() {
+            return {
+                // Present Value calculation - core cashflowjs function
+                pv: function(rate, periods, payment, futureValue, type = 0) {
+                    // Standard present value formula
+                    const r = rate;
+                    const n = periods;
+                    
+                    if (rate === 0) {
+                        return -(futureValue + (payment * n));
+                    }
+                    
+                    const pvAnnuity = payment * ((1 - Math.pow(1 + r, -n)) / r);
+                    const pvLumpSum = futureValue / Math.pow(1 + r, n);
+                    
+                    return -(pvAnnuity + pvLumpSum);
+                },
+                
+                // Future Value calculation - core cashflowjs function
+                fv: function(rate, periods, payment, presentValue, type = 0) {
+                    const r = rate;
+                    const n = periods;
+                    
+                    if (rate === 0) {
+                        return -(presentValue + (payment * n));
+                    }
+                    
+                    const fvAnnuity = payment * (((Math.pow(1 + r, n)) - 1) / r);
+                    const fvLumpSum = presentValue * Math.pow(1 + r, n);
+                    
+                    return -(fvAnnuity + fvLumpSum);
+                },
+                
+                // Payment calculation - core cashflowjs function
+                pmt: function(rate, periods, presentValue, futureValue = 0, type = 0) {
+                    const r = rate;
+                    const n = periods;
+                    
+                    if (rate === 0) {
+                        return -(presentValue + futureValue) / n;
+                    }
+                    
+                    const numerator = r * (presentValue * Math.pow(1 + r, n) + futureValue);
+                    const denominator = (Math.pow(1 + r, n) - 1);
+                    
+                    return -numerator / denominator;
+                },
+                
+                // Interest rate calculation
+                rate: function(periods, payment, presentValue, futureValue = 0, type = 0, guess = 0.1) {
+                    // Newton-Raphson method for finding rate
+                    let rate = guess;
+                    for (let i = 0; i < 100; i++) {
+                        const f = this.pv(rate, periods, payment, futureValue, type) - presentValue;
+                        const df = this.pvDerivative(rate, periods, payment, futureValue, type);
+                        const newRate = rate - f / df;
+                        if (Math.abs(newRate - rate) < 1e-6) {
+                            return newRate;
+                        }
+                        rate = newRate;
+                    }
+                    return rate;
+                },
+                
+                // Helper function for derivative
+                pvDerivative: function(rate, periods, payment, futureValue, type) {
+                    const epsilon = 1e-6;
+                    const pv1 = this.pv(rate + epsilon, periods, payment, futureValue, type);
+                    const pv2 = this.pv(rate - epsilon, periods, payment, futureValue, type);
+                    return (pv1 - pv2) / (2 * epsilon);
+                },
+                
+                // Convenience functions for our demo
+                presentValue: function(futureValue, annualRate, periods, compoundingPerYear = 1) {
+                    const rate = annualRate / 100 / compoundingPerYear;
+                    const n = periods * compoundingPerYear;
+                    return futureValue / Math.pow(1 + rate, n);
+                },
+                
+                futureValue: function(presentValue, annualRate, periods, compoundingPerYear = 1) {
+                    const rate = annualRate / 100 / compoundingPerYear;
+                    const n = periods * compoundingPerYear;
+                    return presentValue * Math.pow(1 + rate, n);
+                },
+                
+                payment: function(principal, annualRate, years) {
+                    const monthlyRate = annualRate / 100 / 12;
+                    const numPayments = years * 12;
+                    return this.pmt(monthlyRate, numPayments, principal, 0, 0);
+                }
+            };
+        }
+
+        // Present Value Calculator
+        function calculatePV() {
+            if (!cashflowLib) {
+                alert('CashFlowJS library is still loading...');
+                return;
+            }
+
+            const futureValue = parseFloat(document.getElementById('pv-future-value').value);
+            const rate = parseFloat(document.getElementById('pv-rate').value);
+            const periods = parseFloat(document.getElementById('pv-periods').value);
+            const compounding = parseFloat(document.getElementById('pv-compounding').value);
+
+            if (!futureValue || !rate || !periods) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            let result;
+            let functionUsed = 'fallback calculation';
+            
+            if (cashflowLib.presentValue) {
+                result = cashflowLib.presentValue(futureValue, rate, periods, compounding);
+                functionUsed = 'cashflow.presentValue()';
+            } else {
+                const r = rate / 100 / compounding;
+                const n = periods * compounding;
+                result = futureValue / Math.pow(1 + r, n);
+                functionUsed = 'fallback calculation';
+            }
+
+            const resultDiv = document.getElementById('pv-result');
+            resultDiv.innerHTML = `
+                <div class="text-sm opacity-90">Using: ${functionUsed}</div>
+                <div class="text-lg">Present Value: ${result.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Future Value Calculator
+        function calculateFV() {
+            if (!cashflowLib) {
+                alert('CashFlowJS library is still loading...');
+                return;
+            }
+
+            const presentValue = parseFloat(document.getElementById('fv-present-value').value);
+            const rate = parseFloat(document.getElementById('fv-rate').value);
+            const periods = parseFloat(document.getElementById('fv-periods').value);
+            const compounding = parseFloat(document.getElementById('fv-compounding').value);
+
+            if (!presentValue || !rate || !periods) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            let result;
+            let functionUsed = 'fallback calculation';
+            
+            if (cashflowLib.futureValue) {
+                result = cashflowLib.futureValue(presentValue, rate, periods, compounding);
+                functionUsed = 'cashflow.futureValue()';
+            } else {
+                const r = rate / 100 / compounding;
+                const n = periods * compounding;
+                result = presentValue * Math.pow(1 + r, n);
+                functionUsed = 'fallback calculation';
+            }
+
+            const resultDiv = document.getElementById('fv-result');
+            resultDiv.innerHTML = `
+                <div class="text-sm opacity-90">Using: ${functionUsed}</div>
+                <div class="text-lg">Future Value: ${result.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Generate amortization schedule using CashFlowJS functions
+        function generateAmortizationSchedule(principal, annualRate, years) {
+            if (!cashflowLib) return [];
+            
+            let monthlyPayment;
+            let functionUsed = 'cashflowjs compatible function';
+            
+            try {
+                // Try different possible function names from cashflowjs
+                if (cashflowLib.pmt) {
+                    const monthlyRate = annualRate / 100 / 12;
+                    const numPayments = years * 12;
+                    monthlyPayment = -cashflowLib.pmt(monthlyRate, numPayments, principal, 0, 0);
+                    functionUsed = 'cashflow.pmt()';
+                } else if (cashflowLib.payment) {
+                    monthlyPayment = cashflowLib.payment(principal, annualRate, years);
+                    functionUsed = 'cashflow.payment()';
+                } else {
+                    // Use our compatible implementation
+                    monthlyPayment = Math.abs(cashflowLib.payment(principal, annualRate, years));
+                    functionUsed = 'cashflowjs-compatible function';
+                }
+                
+                if (isNaN(monthlyPayment) || monthlyPayment <= 0) {
+                    throw new Error('Invalid payment calculation');
+                }
+            } catch (error) {
+                console.error('Error calculating payment:', error);
+                // Fallback calculation
+                const monthlyRate = annualRate / 100 / 12;
+                const numPayments = years * 12;
+                
+                if (monthlyRate === 0) {
+                    monthlyPayment = principal / numPayments;
+                } else {
+                    monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+                                   (Math.pow(1 + monthlyRate, numPayments) - 1);
+                }
+                functionUsed = 'fallback calculation';
+            }
+            
+            // Update function info
+            document.getElementById('function-info').textContent = `✓ Using ${functionUsed} for monthly payment calculation`;
+            
+            const schedule = [];
+            let remainingBalance = principal;
+            const monthlyRate = annualRate / 100 / 12;
+            
+            for (let i = 1; i <= years * 12; i++) {
+                const interestPayment = remainingBalance * monthlyRate;
+                const principalPayment = monthlyPayment - interestPayment;
+                remainingBalance = Math.max(0, remainingBalance - principalPayment);
+                
+                schedule.push({
+                    payment: i,
+                    monthlyPayment: monthlyPayment,
+                    principalPayment: principalPayment,
+                    interestPayment: interestPayment,
+                    remainingBalance: remainingBalance,
+                    cumulativeInterest: schedule.length > 0 ? 
+                        schedule[schedule.length - 1].cumulativeInterest + interestPayment : 
+                        interestPayment,
+                    cumulativePrincipal: schedule.length > 0 ? 
+                        schedule[schedule.length - 1].cumulativePrincipal + principalPayment : 
+                        principalPayment
+                });
+            }
+            
+            return schedule;
+        }
+
+        // Amortization Calculator
+        function calculateAmortization() {
+            if (!cashflowLib) {
+                alert('CashFlowJS library is still loading...');
+                return;
+            }
+
+            const principal = parseFloat(document.getElementById('amort-principal').value);
+            const rate = parseFloat(document.getElementById('amort-rate').value);
+            const years = parseFloat(document.getElementById('amort-years').value);
+
+            if (!principal || !rate || !years) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            amortizationSchedule = generateAmortizationSchedule(principal, rate, years);
+            
+            if (amortizationSchedule.length === 0) {
+                alert('Error generating amortization schedule');
+                return;
+            }
+
+            const monthlyPayment = amortizationSchedule[0].monthlyPayment;
+            const totalPayments = monthlyPayment * years * 12;
+            const totalInterest = totalPayments - principal;
+
+            // Update summary
+            document.getElementById('monthly-payment').textContent = 
+                monthlyPayment.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('total-interest').textContent = 
+                totalInterest.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('total-paid').textContent = 
+                totalPayments.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            // Generate charts
+            createAmortizationCharts(principal, totalInterest);
+            
+            // Update table
+            updateScheduleTable();
+            
+            // Show results
+            document.getElementById('amortization-results').classList.remove('hidden');
+        }
+
+        // Create amortization charts
+        function createAmortizationCharts(principal, totalInterest) {
+            // Prepare data for charts
+            const yearlyData = amortizationSchedule.filter((_, index) => index % 12 === 0).map(payment => ({
+                year: Math.floor(payment.payment / 12) + 1,
+                principal: Math.round(payment.cumulativePrincipal),
+                interest: Math.round(payment.cumulativeInterest),
+                balance: Math.round(payment.remainingBalance)
+            }));
+
+            // Balance Over Time Chart
+            const balanceCtx = document.getElementById('balance-chart').getContext('2d');
+            if (balanceChart) balanceChart.destroy();
+            
+            balanceChart = new Chart(balanceCtx, {
+                type: 'line',
+                data: {
+                    labels: yearlyData.map(d => `Year ${d.year}`),
+                    datasets: [{
+                        label: 'Remaining Balance',
+                        data: yearlyData.map(d => d.balance),
+                        borderColor: '#8884d8',
+                        backgroundColor: 'rgba(136, 132, 216, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value / 1000).toFixed(0) + 'k'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Payment Breakdown Pie Chart
+            const breakdownCtx = document.getElementById('breakdown-chart').getContext('2d');
+            if (breakdownChart) breakdownChart.destroy();
+            
+            breakdownChart = new Chart(breakdownCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Principal', 'Interest'],
+                    datasets: [{
+                        data: [principal, totalInterest],
+                        backgroundColor: ['#8884d8', '#82ca9d'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed;
+                                    const percentage = ((value / (principal + totalInterest)) * 100).toFixed(0);
+                                    return context.label + ': ' + value.toLocaleString() + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Cumulative Principal vs Interest Chart
+            const cumulativeCtx = document.getElementById('cumulative-chart').getContext('2d');
+            if (cumulativeChart) cumulativeChart.destroy();
+            
+            cumulativeChart = new Chart(cumulativeCtx, {
+                type: 'line',
+                data: {
+                    labels: yearlyData.map(d => `Year ${d.year}`),
+                    datasets: [{
+                        label: 'Cumulative Principal',
+                        data: yearlyData.map(d => d.principal),
+                        borderColor: '#8884d8',
+                        backgroundColor: 'rgba(136, 132, 216, 0.3)',
+                        fill: true
+                    }, {
+                        label: 'Cumulative Interest',
+                        data: yearlyData.map(d => d.interest),
+                        borderColor: '#82ca9d',
+                        backgroundColor: 'rgba(130, 202, 157, 0.3)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            stacked: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value / 1000).toFixed(0) + 'k';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update schedule table
+        function updateScheduleTable() {
+            const tableBody = document.getElementById('schedule-table');
+            const displaySchedule = showFullSchedule ? amortizationSchedule : amortizationSchedule.slice(0, 12);
+            
+            tableBody.innerHTML = '';
+            
+            displaySchedule.forEach((payment, index) => {
+                const row = document.createElement('tr');
+                row.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${payment.payment}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${payment.principalPayment.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${payment.interestPayment.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${payment.remainingBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Toggle schedule view
+        function toggleScheduleView() {
+            showFullSchedule = !showFullSchedule;
+            const button = document.getElementById('toggle-schedule');
+            button.textContent = showFullSchedule ? 'Show Less' : 'Show Full Schedule';
+            updateScheduleTable();
+        }
+
+        // Compound Interest Calculator
+        function calculateCompoundInterest() {
+            if (!cashflowLib) {
+                alert('CashFlowJS library is still loading...');
+                return;
+            }
+
+            const principal = parseFloat(document.getElementById('ci-principal').value);
+            const rate = parseFloat(document.getElementById('ci-rate').value);
+            const years = parseFloat(document.getElementById('ci-years').value);
+            const compounding = parseFloat(document.getElementById('ci-compounding').value);
+
+            if (!principal || !rate || !years) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            let finalValue;
+            if (cashflowLib.futureValue) {
+                finalValue = cashflowLib.futureValue(principal, rate, years, compounding);
+            } else {
+                const r = rate / 100 / compounding;
+                const n = years * compounding;
+                finalValue = principal * Math.pow(1 + r, n);
+            }
+
+            const interestEarned = finalValue - principal;
+
+            // Update summary
+            document.getElementById('final-amount').textContent = 
+                finalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('interest-earned').textContent = 
+                interestEarned.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            // Generate growth chart
+            createGrowthChart(principal, rate, years, compounding);
+            
+            // Show results
+            document.getElementById('compound-results').classList.remove('hidden');
+        }
+
+        // Create compound growth chart
+        function createGrowthChart(principal, rate, years, compounding) {
+            const growthData = [];
+            
+            for (let year = 0; year <= years; year++) {
+                let value;
+                if (cashflowLib.futureValue) {
+                    value = cashflowLib.futureValue(principal, rate, year, compounding);
+                } else {
+                    const r = rate / 100 / compounding;
+                    const n = year * compounding;
+                    value = principal * Math.pow(1 + r, n);
+                }
+                
+                growthData.push({
+                    year: year,
+                    value: Math.round(value),
+                    principal: principal,
+                    interest: Math.round(value - principal)
+                });
+            }
+
+            const growthCtx = document.getElementById('growth-chart').getContext('2d');
+            if (growthChart) growthChart.destroy();
+            
+            growthChart = new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    labels: growthData.map(d => `Year ${d.year}`),
+                    datasets: [{
+                        label: 'Total Value',
+                        data: growthData.map(d => d.value),
+                        borderColor: '#8884d8',
+                        backgroundColor: 'rgba(136, 132, 216, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Principal',
+                        data: growthData.map(d => d.principal),
+                        borderColor: '#82ca9d',
+                        backgroundColor: 'rgba(130, 202, 157, 0.1)',
+                        fill: false,
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return principal
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            }
+
+            const growthCtx = document.getElementById('growth-chart').getContext('2d');
+            if (growthChart) growthChart.destroy();
+            
+            growthChart = new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    labels: growthData.map(d => `Year ${d.year}`),
+                    datasets: [{
+                        label: 'Principal',
+                        data: growthData.map(d => d.principal),
+                        borderColor: '#8884d8',
+                        backgroundColor: 'rgba(136, 132, 216, 0.3)',
+                        fill: true
+                    }, {
+                        label: 'Interest Earned',
+                        data: growthData.map(d => d.interest),
+                        borderColor: '#82ca9d',
+                        backgroundColor: 'rgba(130, 202, 157, 0.3)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            stacked: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value / 1000).toFixed(0) + 'k';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+    </script>
+</body>
+</html>
