@@ -9,7 +9,7 @@ const path = require('path');
  */
 
 const SOURCE_FILE = path.join(__dirname, 'src', 'index.js');
-const DEMO_FILE = path.join(__dirname, 'dist', 'index.html');
+const DEMO_FILE = path.join(__dirname, 'demo', 'index.html');
 
 function readSourceFunctions() {
     try {
