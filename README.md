@@ -32,6 +32,9 @@ Use the package manager [npm](https://www.npmjs.com) to install cashflowjs.
 npm install cashflowjs
 ```
 
+## Demo
+🎯 **[Try the Interactive Demo](https://rjwehrle.github.io/cashflowjs/demo/index.html)** - Explore all CashFlowJS functions with live calculations and visualizations
+
 ## Usage
 
 ```javascript
