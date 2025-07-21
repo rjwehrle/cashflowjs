@@ -1,4 +1,6 @@
 .github/
 node_modules/
 test/
+dist/
 biome.json
+update-demo.js

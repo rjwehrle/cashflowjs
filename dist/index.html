@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CashFlowJS Demo</title>
+    
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- CashFlowJS Functions - Direct Import from Source -->
+    <script>
+        // CashFlowJS Functions (from src/index.js)
+        const cashflow = {
+            fv(pv, r, t, m) {
+    // Continuous compounding
+    if (m == null) {
+        return pv * Math.E ** (r * t);
+    }
+    // Discrete compounding
+    return pv * (1 + r / m) ** (m * t);
+},
+
+            pv(fv, r, t, m) {
+    // Continuous compounding
+    if (m == null) {
+        return fv / Math.E ** (r * t);
+    }
+    // Discrete compounding
+    return fv / (1 + r / m) ** (m * t);
+},
+
+            pvoa(pmt, r, n, m = 1) {
+    const i = r / m;
+    if (i === 0) {
+        return pmt * n;
+    }
+    return (pmt * (1 - (1 + i) ** -n)) / i;
+},
+
+            pvad(pmt, r, n, m = 1) {
+    const i = r / m;
+    return cashflow.pvoa(pmt, r, n, m) * (1 + i);
+},
+
+            fvoa(pmt, r, n, m = 1) {
+    const i = r / m;
+    if (i === 0) {
+        return pmt * n;
+    }
+    return (pmt * ((1 + i) ** n - 1)) / i;
+},
+
+            fvad(pmt, r, n, m = 1) {
+    const i = r / m;
+    return cashflow.fvoa(pmt, r, n, m) * (1 + i);
+},
+
+            pmt(pv, r, n, m = 1) {
+    const i = r / m;
+    if (i === 0) {
+        return pv / n;
+    }
+    return (pv * i) / (1 - (1 + i) ** -n);
+},
+
+            nper(pv, pmt, r, m = 1) {
+    const i = r / m;
+    if (i === 0) {
+        return pv / pmt;
+    }
+    return -Math.log(1 - (pv * i) / pmt) / Math.log(1 + i);
+}
+        };
+
+        // Make it available globally for compatibility
+        window.cashflow = cashflow;
+    </script>
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* Custom animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease;
+        }
+        
+        /* Custom gradient backgrounds */
+        .bg-gradient-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        /* Fixed chart container heights */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .chart-container canvas {
+            max-height: 300px !important;
+            max-width: 100% !important;
+        }
+        
+        /* Ensure chart wrapper has fixed dimensions */
+        #growth-chart, #balance-chart, #breakdown-chart, #cumulative-chart, #amortization-chart {
+            max-height: 300px !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                CashFlowJS Demo
+            </h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Financial calculations showcasing CashFlowJS functions
+            </p>
+        </div>
+
+        <!-- Calculator Grid - Single Cash Flow Functions -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Present Value Calculator -->
+            <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xl mr-4">
+                        💰
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Present Value Calculator</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Future Value ($)</label>
+                        <input type="number" id="pv-future-value" placeholder="10000" value="10000"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Interest Rate (%)</label>
+                        <input type="number" id="pv-rate" placeholder="5" value="5" step="0.01"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Time Periods</label>
+                        <input type="number" id="pv-periods" placeholder="10" value="10"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Compounding Frequency</label>
+                        <select id="pv-compounding" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            <option value="1">Annual</option>
+                            <option value="2">Semi-Annual</option>
+                            <option value="4">Quarterly</option>
+                            <option value="12" selected>Monthly</option>
+                            <option value="365">Daily</option>
+                            <option value="continuous">Continuous</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="calculatePV()" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        Calculate Present Value
+                    </button>
+                    
+                    <div id="pv-result" class="hidden mt-4 p-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg text-center font-semibold slide-in">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Future Value Calculator -->
+            <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-600 rounded-lg flex items-center justify-center text-white text-xl mr-4">
+                        📈
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Future Value Calculator</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Present Value ($)</label>
+                        <input type="number" id="fv-present-value" placeholder="5000" value="5000"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Interest Rate (%)</label>
+                        <input type="number" id="fv-rate" placeholder="7" value="7" step="0.01"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Time Periods</label>
+                        <input type="number" id="fv-periods" placeholder="15" value="15"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Compounding Frequency</label>
+                        <select id="fv-compounding" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                            <option value="1">Annual</option>
+                            <option value="2">Semi-Annual</option>
+                            <option value="4">Quarterly</option>
+                            <option value="12" selected>Monthly</option>
+                            <option value="365">Daily</option>
+                            <option value="continuous">Continuous</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="calculateFV()" class="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-green-600 hover:to-teal-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        Calculate Future Value
+                    </button>
+                    
+                    <div id="fv-result" class="hidden mt-4 p-4 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg text-center font-semibold slide-in">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Annuity Calculators Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Present Value of Annuity -->
+            <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white text-xl mr-4">
+                        🏦
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Present Value of Annuity</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Annuity Type</label>
+                        <select id="pva-type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                            <option value="ordinary">Ordinary Annuity (payments at end of period)</option>
+                            <option value="due">Annuity Due (payments at beginning of period)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Payment per Period ($)</label>
+                        <input type="number" id="pva-payment" placeholder="1000" value="1000"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Interest Rate (%)</label>
+                        <input type="number" id="pva-rate" placeholder="6" value="6" step="0.01"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Number of Payments</label>
+                        <input type="number" id="pva-periods" placeholder="20" value="20"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Compounding per Year</label>
+                        <select id="pva-compounding" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                            <option value="1">Annual</option>
+                            <option value="2">Semi-Annual</option>
+                            <option value="4">Quarterly</option>
+                            <option value="12" selected>Monthly</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="calculatePVA()" class="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        Calculate Present Value of Annuity
+                    </button>
+                    
+                    <div id="pva-result" class="hidden mt-4 p-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg text-center font-semibold slide-in">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Future Value of Annuity -->
+            <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-xl mr-4">
+                        📊
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Future Value of Annuity</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Annuity Type</label>
+                        <select id="fva-type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                            <option value="ordinary">Ordinary Annuity (payments at end of period)</option>
+                            <option value="due">Annuity Due (payments at beginning of period)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Payment per Period ($)</label>
+                        <input type="number" id="fva-payment" placeholder="500" value="500"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Interest Rate (%)</label>
+                        <input type="number" id="fva-rate" placeholder="7" value="7" step="0.01"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Number of Payments</label>
+                        <input type="number" id="fva-periods" placeholder="30" value="30"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Compounding per Year</label>
+                        <select id="fva-compounding" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                            <option value="1">Annual</option>
+                            <option value="2">Semi-Annual</option>
+                            <option value="4">Quarterly</option>
+                            <option value="12" selected>Monthly</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="calculateFVA()" class="w-full bg-gradient-to-r from-indigo-500 to-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-indigo-600 hover:to-blue-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        Calculate Future Value of Annuity
+                    </button>
+                    
+                    <div id="fva-result" class="hidden mt-4 p-4 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-lg text-center font-semibold slide-in">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Calculators Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Payment Calculator -->
+            <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white text-xl mr-4">
+                        💳
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Payment Calculator</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Present Value/Loan Amount ($)</label>
+                        <input type="number" id="pmt-pv" placeholder="250000" value="250000"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Interest Rate (%)</label>
+                        <input type="number" id="pmt-rate" placeholder="4.5" value="4.5" step="0.01"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Number of Payments</label>
+                        <input type="number" id="pmt-periods" placeholder="360" value="360"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Compounding per Year</label>
+                        <select id="pmt-compounding" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all">
+                            <option value="1">Annual</option>
+                            <option value="2">Semi-Annual</option>
+                            <option value="4">Quarterly</option>
+                            <option value="12" selected>Monthly</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="calculatePMT()" class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-orange-600 hover:to-red-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        Calculate Payment
+                    </button>
+                    
+                    <div id="pmt-result" class="hidden mt-4 p-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg text-center font-semibold slide-in">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Number of Periods Calculator -->
+            <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 bg-gradient-to-r from-cyan-500 to-teal-600 rounded-lg flex items-center justify-center text-white text-xl mr-4">
+                        ⏱️
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Number of Periods Calculator</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Present Value/Principal ($)</label>
+                        <input type="number" id="nper-pv" placeholder="100000" value="100000"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Payment per Period ($)</label>
+                        <input type="number" id="nper-payment" placeholder="1200" value="1200"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Interest Rate (%)</label>
+                        <input type="number" id="nper-rate" placeholder="5.5" value="5.5" step="0.01"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Compounding per Year</label>
+                        <select id="nper-compounding" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all">
+                            <option value="1">Annual</option>
+                            <option value="2">Semi-Annual</option>
+                            <option value="4">Quarterly</option>
+                            <option value="12" selected>Monthly</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="calculateNPER()" class="w-full bg-gradient-to-r from-cyan-500 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-cyan-600 hover:to-teal-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        Calculate Number of Periods
+                    </button>
+                    
+                    <div id="nper-result" class="hidden mt-4 p-4 bg-gradient-to-r from-cyan-500 to-teal-500 text-white rounded-lg text-center font-semibold slide-in">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loan Amortization Calculator -->
+        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 mb-8">
+            <div class="flex items-center mb-6">
+                <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-600 rounded-lg flex items-center justify-center text-white text-xl mr-4">
+                    🏠
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800">Loan Amortization Calculator</h3>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Loan Amount ($)</label>
+                    <input type="number" id="amort-principal" placeholder="300000" value="300000"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Rate (%)</label>
+                    <input type="number" id="amort-rate" placeholder="6.5" value="6.5" step="0.01"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Years</label>
+                    <input type="number" id="amort-years" placeholder="30" value="30"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
+                    <select id="amort-frequency" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all">
+                        <option value="12" selected>Monthly</option>
+                        <option value="4">Quarterly</option>
+                        <option value="2">Semi-Annual</option>
+                        <option value="1">Annual</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button onclick="calculateAmortization()" class="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-red-600 hover:to-pink-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl mb-6">
+                Calculate Amortization Schedule
+            </button>
+            
+            <div id="amortization-results" class="hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gradient-to-r from-red-500 to-pink-500 text-white p-4 rounded-lg text-center">
+                        <div class="text-sm opacity-90">Monthly Payment</div>
+                        <div class="text-xl font-bold" id="monthly-payment">$0</div>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-4 rounded-lg text-center">
+                        <div class="text-sm opacity-90">Total Interest</div>
+                        <div class="text-xl font-bold" id="total-interest">$0</div>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-lg text-center">
+                        <div class="text-sm opacity-90">Total Paid</div>
+                        <div class="text-xl font-bold" id="total-paid">$0</div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-lg font-semibold mb-4 text-gray-800">Principal vs Interest Over Time</h4>
+                    <div class="chart-container">
+                        <canvas id="amortization-chart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-lg font-semibold text-gray-800">Complete Amortization Schedule</h4>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-600">Show:</span>
+                            <select id="payments-per-page" class="text-sm border border-gray-300 rounded px-2 py-1" onchange="updateAmortizationTable()">
+                                <option value="12">12 payments</option>
+                                <option value="24">24 payments</option>
+                                <option value="36">36 payments</option>
+                                <option value="60">60 payments</option>
+                                <option value="all">All payments</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-gray-200">
+                                    <th class="border p-2 text-left">Payment #</th>
+                                    <th class="border p-2 text-right">Payment</th>
+                                    <th class="border p-2 text-right">Principal</th>
+                                    <th class="border p-2 text-right">Interest</th>
+                                    <th class="border p-2 text-right">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="amortization-table">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="pagination-controls" class="flex justify-between items-center mt-4 hidden">
+                        <div class="text-sm text-gray-600">
+                            <span id="pagination-info">Showing payments 1-12 of 360</span>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button id="prev-page" onclick="changePage(-1)" class="px-3 py-1 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+                            <span id="page-numbers" class="flex space-x-1"></span>
+                            <button id="next-page" onclick="changePage(1)" class="px-3 py-1 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compound Interest Visualizer -->
+        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 mb-8">
+            <div class="flex items-center mb-6">
+                <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center text-white text-xl mr-4">
+                    📊
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800">Compound Interest Growth Visualizer</h3>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Initial ($)</label>
+                    <input type="number" id="ci-principal" placeholder="10000" value="10000"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Rate (%)</label>
+                    <input type="number" id="ci-rate" placeholder="8" value="8" step="0.1"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Years</label>
+                    <input type="number" id="ci-years" placeholder="25" value="25"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
+                    <select id="ci-compounding" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                        <option value="1">Annual</option>
+                        <option value="4">Quarterly</option>
+                        <option value="12" selected>Monthly</option>
+                        <option value="365">Daily</option>
+                        <option value="continuous">Continuous</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button onclick="calculateCompoundInterest()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl mb-6">
+                Visualize Growth
+            </button>
+            
+            <div id="compound-results" class="hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-lg text-center">
+                        <div class="text-sm opacity-90">Final Amount</div>
+                        <div class="text-xl font-bold" id="final-amount">$0</div>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-4 rounded-lg text-center">
+                        <div class="text-sm opacity-90">Interest Earned</div>
+                        <div class="text-xl font-bold" id="interest-earned">$0</div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-lg font-semibold mb-4 text-gray-800">Investment Growth Over Time</h4>
+                    <div class="chart-container">
+                        <canvas id="growth-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subtle Credit -->
+    <div class="text-center py-4">
+        <p class="text-xs text-gray-400">
+            CashFlowJS Demo built with Claude AI assistance
+        </p>
+    </div>
+
+    <script>
+        // Global variables
+        let cashflowLib = null;
+        let growthChart = null;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // CashFlowJS functions are now embedded directly - ready to use
+            cashflowLib = window.cashflow;
+        });
+
+        // Present Value Calculator
+        function calculatePV() {
+            if (!cashflowLib || !cashflowLib.pv) {
+                alert('CashFlowJS pv() function not available.');
+                return;
+            }
+
+            const fv = parseFloat(document.getElementById('pv-future-value').value);
+            const r = parseFloat(document.getElementById('pv-rate').value) / 100;
+            const t = parseFloat(document.getElementById('pv-periods').value);
+            const compounding = document.getElementById('pv-compounding').value;
+            
+            if (!fv || !r || !t) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            let m = compounding === 'continuous' ? null : parseInt(compounding);
+            let result = cashflowLib.pv(fv, r, t, m);
+            
+            let functionCall = m === null 
+                ? `cashflow.pv(${fv}, ${r.toFixed(3)}, ${t})`
+                : `cashflow.pv(${fv}, ${r.toFixed(3)}, ${t}, ${m})`;
+            
+            const resultDiv = document.getElementById('pv-result');
+            resultDiv.innerHTML = `
+                <div class="text-sm font-mono text-blue-100 mb-2">${functionCall}</div>
+                <div class="text-lg font-semibold">Present Value: $${result.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Future Value Calculator
+        function calculateFV() {
+            if (!cashflowLib || !cashflowLib.fv) {
+                alert('CashFlowJS fv() function not available.');
+                return;
+            }
+
+            const presentValue = parseFloat(document.getElementById('fv-present-value').value);
+            const rate = parseFloat(document.getElementById('fv-rate').value) / 100;
+            const periods = parseFloat(document.getElementById('fv-periods').value);
+            const compounding = document.getElementById('fv-compounding').value;
+
+            if (!presentValue || !rate || !periods) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            let m = compounding === 'continuous' ? null : parseInt(compounding);
+            const result = cashflowLib.fv(presentValue, rate, periods, m);
+            
+            let functionCall = m === null
+                ? `cashflow.fv(${presentValue}, ${rate.toFixed(3)}, ${periods})`
+                : `cashflow.fv(${presentValue}, ${rate.toFixed(3)}, ${periods}, ${m})`;
+
+            const resultDiv = document.getElementById('fv-result');
+            resultDiv.innerHTML = `
+                <div class="text-sm font-mono text-green-100 mb-2">${functionCall}</div>
+                <div class="text-lg font-semibold">Future Value: $${result.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Present Value of Annuity Calculator (Ordinary or Due)
+        function calculatePVA() {
+            const annuityType = document.getElementById('pva-type').value;
+            const payment = parseFloat(document.getElementById('pva-payment').value);
+            const rate = parseFloat(document.getElementById('pva-rate').value) / 100;
+            const periods = parseFloat(document.getElementById('pva-periods').value);
+            const compounding = parseFloat(document.getElementById('pva-compounding').value);
+
+            if (!payment || !rate || !periods) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            let result, functionCall, description;
+
+            if (annuityType === 'ordinary') {
+                if (!cashflowLib || !cashflowLib.pvoa) {
+                    alert('CashFlowJS pvoa() function not available.');
+                    return;
+                }
+                result = cashflowLib.pvoa(payment, rate, periods, compounding);
+                functionCall = `cashflow.pvoa(${payment}, ${rate.toFixed(3)}, ${periods}, ${compounding})`;
+                description = 'PV of Ordinary Annuity';
+            } else {
+                if (!cashflowLib || !cashflowLib.pvad) {
+                    alert('CashFlowJS pvad() function not available.');
+                    return;
+                }
+                result = cashflowLib.pvad(payment, rate, periods, compounding);
+                functionCall = `cashflow.pvad(${payment}, ${rate.toFixed(3)}, ${periods}, ${compounding})`;
+                description = 'PV of Annuity Due';
+            }
+
+            const resultDiv = document.getElementById('pva-result');
+            resultDiv.innerHTML = `
+                <div class="text-sm font-mono text-purple-100 mb-2">${functionCall}</div>
+                <div class="text-lg font-semibold">${description}: $${result.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Future Value of Annuity Calculator (Ordinary or Due)
+        function calculateFVA() {
+            const annuityType = document.getElementById('fva-type').value;
+            const payment = parseFloat(document.getElementById('fva-payment').value);
+            const rate = parseFloat(document.getElementById('fva-rate').value) / 100;
+            const periods = parseFloat(document.getElementById('fva-periods').value);
+            const compounding = parseFloat(document.getElementById('fva-compounding').value);
+
+            if (!payment || !rate || !periods) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            let result, functionCall, description;
+
+            if (annuityType === 'ordinary') {
+                if (!cashflowLib || !cashflowLib.fvoa) {
+                    alert('CashFlowJS fvoa() function not available.');
+                    return;
+                }
+                result = cashflowLib.fvoa(payment, rate, periods, compounding);
+                functionCall = `cashflow.fvoa(${payment}, ${rate.toFixed(3)}, ${periods}, ${compounding})`;
+                description = 'FV of Ordinary Annuity';
+            } else {
+                if (!cashflowLib || !cashflowLib.fvad) {
+                    alert('CashFlowJS fvad() function not available.');
+                    return;
+                }
+                result = cashflowLib.fvad(payment, rate, periods, compounding);
+                functionCall = `cashflow.fvad(${payment}, ${rate.toFixed(3)}, ${periods}, ${compounding})`;
+                description = 'FV of Annuity Due';
+            }
+
+            const resultDiv = document.getElementById('fva-result');
+            resultDiv.innerHTML = `
+                <div class="text-sm font-mono text-indigo-100 mb-2">${functionCall}</div>
+                <div class="text-lg font-semibold">${description}: $${result.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Payment Calculator
+        function calculatePMT() {
+            if (!cashflowLib || !cashflowLib.pmt) {
+                alert('CashFlowJS pmt() function not available.');
+                return;
+            }
+
+            const pv = parseFloat(document.getElementById('pmt-pv').value);
+            const rate = parseFloat(document.getElementById('pmt-rate').value) / 100;
+            const periods = parseFloat(document.getElementById('pmt-periods').value);
+            const compounding = parseFloat(document.getElementById('pmt-compounding').value);
+
+            if (!pv || !rate || !periods) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const result = cashflowLib.pmt(pv, rate, periods, compounding);
+            
+            const functionCall = `cashflow.pmt(${pv}, ${rate.toFixed(3)}, ${periods}, ${compounding})`;
+
+            const resultDiv = document.getElementById('pmt-result');
+            resultDiv.innerHTML = `
+                <div class="text-sm font-mono text-orange-100 mb-2">${functionCall}</div>
+                <div class="text-lg font-semibold">Payment: $${result.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Number of Periods Calculator
+        function calculateNPER() {
+            if (!cashflowLib || !cashflowLib.nper) {
+                alert('CashFlowJS nper() function not available.');
+                return;
+            }
+
+            const pv = parseFloat(document.getElementById('nper-pv').value);
+            const payment = parseFloat(document.getElementById('nper-payment').value);
+            const rate = parseFloat(document.getElementById('nper-rate').value) / 100;
+            const compounding = parseFloat(document.getElementById('nper-compounding').value);
+
+            if (!pv || !payment || !rate) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const result = cashflowLib.nper(pv, payment, rate, compounding);
+            
+            const functionCall = `cashflow.nper(${pv}, ${payment}, ${rate.toFixed(3)}, ${compounding})`;
+
+            const resultDiv = document.getElementById('nper-result');
+            resultDiv.innerHTML = `
+                <div class="text-sm font-mono text-cyan-100 mb-2">${functionCall}</div>
+                <div class="text-lg font-semibold">Number of Periods: ${result.toFixed(2)}</div>
+                <div class="text-sm mt-1">≈ ${Math.round(result)} payments</div>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Global variables for amortization
+        let amortizationChart = null;
+        let fullAmortizationSchedule = [];
+        let currentPage = 1;
+        let paymentsPerPage = 12;
+
+        // Loan Amortization Calculator
+        function calculateAmortization() {
+            if (!cashflowLib || !cashflowLib.pmt || !cashflowLib.pv) {
+                alert('CashFlowJS pmt() and pv() functions not available.');
+                return;
+            }
+
+            const principal = parseFloat(document.getElementById('amort-principal').value);
+            const annualRate = parseFloat(document.getElementById('amort-rate').value) / 100;
+            const years = parseFloat(document.getElementById('amort-years').value);
+            const frequency = parseFloat(document.getElementById('amort-frequency').value);
+
+            if (!principal || !annualRate || !years) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const totalPayments = years * frequency;
+            
+            // Calculate payment using CashFlowJS pmt function
+            const payment = cashflowLib.pmt(principal, annualRate, totalPayments, frequency);
+            
+            // Generate complete amortization schedule using CashFlowJS functions
+            fullAmortizationSchedule = [];
+            let balance = principal;
+            let totalInterestPaid = 0;
+            const periodRate = annualRate / frequency;
+            
+            for (let i = 1; i <= totalPayments; i++) {
+                const interestPayment = balance * periodRate;
+                const principalPayment = payment - interestPayment;
+                balance = balance - principalPayment;
+                totalInterestPaid += interestPayment;
+                
+                fullAmortizationSchedule.push({
+                    payment: i,
+                    paymentAmount: payment,
+                    principal: principalPayment,
+                    interest: interestPayment,
+                    balance: Math.max(0, balance) // Prevent negative balance due to rounding
+                });
+            }
+
+            // Update summary cards
+            const paymentLabel = frequency === 12 ? 'Monthly Payment' : 
+                                frequency === 4 ? 'Quarterly Payment' :
+                                frequency === 2 ? 'Semi-Annual Payment' : 'Annual Payment';
+            
+            document.getElementById('monthly-payment').parentElement.querySelector('.text-sm').textContent = paymentLabel;
+            document.getElementById('monthly-payment').textContent = 
+                '$' + payment.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('total-interest').textContent = 
+                '$' + totalInterestPaid.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('total-paid').textContent = 
+                '$' + (principal + totalInterestPaid).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            // Create complete amortization chart
+            createAmortizationChart(fullAmortizationSchedule, frequency);
+            
+            // Reset pagination and create table
+            currentPage = 1;
+            paymentsPerPage = parseInt(document.getElementById('payments-per-page').value) || 12;
+            updateAmortizationTable();
+            
+            // Show results
+            document.getElementById('amortization-results').classList.remove('hidden');
+        }
+
+        // Create complete amortization chart showing ALL payments
+        function createAmortizationChart(schedule, frequency) {
+            // Show ALL payments - no sampling
+            const chartData = schedule.map(payment => ({
+                period: payment.payment,
+                principal: payment.principal,
+                interest: payment.interest
+            }));
+
+            const amortCtx = document.getElementById('amortization-chart').getContext('2d');
+            
+            // Destroy previous chart
+            if (amortizationChart) {
+                amortizationChart.destroy();
+            }
+            
+            amortizationChart = new Chart(amortCtx, {
+                type: 'line',
+                data: {
+                    labels: chartData.map(d => d.period),
+                    datasets: [{
+                        label: 'Principal',
+                        data: chartData.map(d => d.principal),
+                        backgroundColor: 'rgba(59, 130, 246, 0.3)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        pointHoverRadius: 4
+                    }, {
+                        label: 'Interest',
+                        data: chartData.map(d => d.interest),
+                        backgroundColor: 'rgba(239, 68, 68, 0.3)',
+                        borderColor: 'rgb(239, 68, 68)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        pointHoverRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: `Complete Loan Amortization: Payments 1-${schedule.length}`
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return `Payment #${context[0].label}`;
+                                },
+                                label: function(context) {
+                                    return context.dataset.label + ': $' + context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                },
+                                afterBody: function(context) {
+                                    const paymentNum = parseInt(context[0].label);
+                                    const payment = schedule[paymentNum - 1];
+                                    if (payment) {
+                                        return [
+                                            `Total Payment: $${payment.paymentAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+                                            `Remaining Balance: $${payment.balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
+                                        ];
+                                    }
+                                    return [];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Payment Number'
+                            },
+                            ticks: {
+                                stepSize: frequency === 12 ? 12 : frequency === 4 ? 4 : frequency === 2 ? 2 : 1,
+                                callback: function(value) {
+                                    if (frequency === 12 && value % 12 === 0) {
+                                        return `Year ${value / 12}`;
+                                    } else if (frequency === 4 && value % 4 === 0) {
+                                        return `Year ${value / 4}`;
+                                    } else if (frequency === 2 && value % 2 === 0) {
+                                        return `Year ${value / 2}`;
+                                    } else if (frequency === 1) {
+                                        return `Year ${value}`;
+                                    }
+                                    return value;
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Payment Amount ($)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update amortization table based on current page and payments per page
+        function updateAmortizationTable() {
+            if (fullAmortizationSchedule.length === 0) return;
+            
+            paymentsPerPage = document.getElementById('payments-per-page').value;
+            
+            if (paymentsPerPage === 'all') {
+                // Show all payments
+                createAmortizationTable(fullAmortizationSchedule);
+                document.getElementById('pagination-controls').classList.add('hidden');
+            } else {
+                // Show paginated payments
+                paymentsPerPage = parseInt(paymentsPerPage);
+                const totalPages = Math.ceil(fullAmortizationSchedule.length / paymentsPerPage);
+                currentPage = Math.min(currentPage, totalPages); // Adjust if current page is out of bounds
+                
+                const startIndex = (currentPage - 1) * paymentsPerPage;
+                const endIndex = Math.min(startIndex + paymentsPerPage, fullAmortizationSchedule.length);
+                const pageData = fullAmortizationSchedule.slice(startIndex, endIndex);
+                
+                createAmortizationTable(pageData);
+                updatePaginationControls();
+                document.getElementById('pagination-controls').classList.remove('hidden');
+            }
+        }
+
+        // Create amortization table
+        function createAmortizationTable(scheduleSlice) {
+            const tableBody = document.getElementById('amortization-table');
+            tableBody.innerHTML = '';
+            
+            scheduleSlice.forEach(payment => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="border p-2">${payment.payment}</td>
+                    <td class="border p-2 text-right">$${payment.paymentAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="border p-2 text-right">$${payment.principal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="border p-2 text-right">$${payment.interest.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="border p-2 text-right">$${payment.balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Update pagination controls
+        function updatePaginationControls() {
+            if (paymentsPerPage === 'all') return;
+            
+            const totalPages = Math.ceil(fullAmortizationSchedule.length / paymentsPerPage);
+            const startPayment = (currentPage - 1) * paymentsPerPage + 1;
+            const endPayment = Math.min(currentPage * paymentsPerPage, fullAmortizationSchedule.length);
+            
+            // Update info text
+            document.getElementById('pagination-info').textContent = 
+                `Showing payments ${startPayment}-${endPayment} of ${fullAmortizationSchedule.length}`;
+            
+            // Update previous/next buttons
+            document.getElementById('prev-page').disabled = currentPage === 1;
+            document.getElementById('next-page').disabled = currentPage === totalPages;
+            
+            // Update page numbers
+            const pageNumbers = document.getElementById('page-numbers');
+            pageNumbers.innerHTML = '';
+            
+            // Show page numbers (max 5)
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + 4);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                pageBtn.className = `px-2 py-1 text-sm rounded ${i === currentPage ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`;
+                pageBtn.onclick = () => goToPage(i);
+                pageNumbers.appendChild(pageBtn);
+            }
+        }
+
+        // Change page
+        function changePage(direction) {
+            const totalPages = Math.ceil(fullAmortizationSchedule.length / paymentsPerPage);
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                updateAmortizationTable();
+            }
+        }
+
+        // Go to specific page
+        function goToPage(page) {
+            currentPage = page;
+            updateAmortizationTable();
+        }
+
+        // Compound Interest Calculator
+        function calculateCompoundInterest() {
+            if (!cashflowLib || !cashflowLib.fv) {
+                alert('CashFlowJS fv() function not available.');
+                return;
+            }
+
+            const principal = parseFloat(document.getElementById('ci-principal').value);
+            const rate = parseFloat(document.getElementById('ci-rate').value) / 100;
+            const years = parseFloat(document.getElementById('ci-years').value);
+            const compounding = document.getElementById('ci-compounding').value;
+
+            if (!principal || !rate || !years) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            let m = compounding === 'continuous' ? null : parseInt(compounding);
+            const finalValue = cashflowLib.fv(principal, rate, years, m);
+            const interestEarned = finalValue - principal;
+
+            // Update summary
+            document.getElementById('final-amount').textContent = 
+                '$' + finalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('interest-earned').textContent = 
+                '$' + interestEarned.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            // Generate growth chart
+            createGrowthChart(principal, rate, years, m);
+            
+            // Show results
+            document.getElementById('compound-results').classList.remove('hidden');
+        }
+
+        // Create compound growth chart
+        function createGrowthChart(principal, rate, years, compounding) {
+            const growthData = [];
+            
+            for (let year = 0; year <= years; year++) {
+                const value = cashflowLib.fv(principal, rate, year, compounding);
+                growthData.push({
+                    year: year,
+                    value: Math.round(value)
+                });
+            }
+
+            const growthCtx = document.getElementById('growth-chart').getContext('2d');
+            
+            // Destroy previous chart to prevent memory leaks
+            if (growthChart) {
+                growthChart.destroy();
+            }
+            
+            growthChart = new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    labels: growthData.map(d => `Year ${d.year}`),
+                    datasets: [{
+                        label: 'Investment Value',
+                        data: growthData.map(d => d.value),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Investment Value: $' + context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Investment Value ($)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000).toFixed(0) + 'k';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
