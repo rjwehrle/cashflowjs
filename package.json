@@ -17,7 +17,8 @@
   "scripts": {
     "test": "npx mocha",
     "lint": "npx @biomejs/biome lint src test --apply",
-    "format": "npx @biomejs/biome format src test --write"
+    "format": "npx @biomejs/biome format src test --write",
+    "update-demo": "node update-demo.js"
   },
   "author": "rjwehrle",
   "license": "MIT",
